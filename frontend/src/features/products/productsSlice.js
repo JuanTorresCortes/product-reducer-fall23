@@ -1,3 +1,67 @@
+import { createSlice } from "@reduxjs/toolkit";
+import { v4 as uuidv4 } from "uuid";
+
+const initialState = [];
+
+const productsSlice = createSlice({
+  name: "products",
+  initialState,
+  reducers: {
+    // Equivalent to 'get-products'
+    getProducts: (state, action) => {
+      return action.payload;
+    },
+
+    // Equivalent to 'delete'
+    deleteProduct: (state, action) => {
+      return state.filter((element) => element.id !== action.payload.id);
+    },
+
+    // Equivalent to 'edit'
+    editProduct: (state, action) => {
+      return state.map((element) =>
+        element.id === action.payload.id ? action.payload : element
+      );
+    },
+
+    // Equivalent to 'add-product'
+    addProduct: (state) => {
+      const newProduct = {
+        id: uuidv4(),
+        type: "",
+        title: "",
+        publisher: "",
+        genre: "",
+        price: 0.0,
+      };
+      state.unshift(newProduct);
+    },
+
+    // Equivalent to 'add-API'
+    addAPIProducts: (state, action) => {
+      const transformedPayload = action.payload.map((element) => ({
+        id: element.id,
+        type: "game",
+        title: element.gameTitle,
+        publisher: element.publisherName,
+        genre: element.genre,
+        price: element.MSRP,
+      }));
+      return [...transformedPayload, ...state];
+    },
+  },
+});
+
+export const {
+  getProducts,
+  addProduct,
+  deleteProduct,
+  editProduct,
+  addAPIProducts,
+} = productsSlice.actions;
+
+export default productsSlice.reducer;
+
 // import { v4 as uuidv4 } from 'uuid';
 
 // export default function productReducer(state, action) {
@@ -7,7 +71,7 @@
 //             // filter the array with the passed id
 //             // return the new filtered array
 //             // console.log(action.id);
-//             // let filteredArr = state.filter(element => 
+//             // let filteredArr = state.filter(element =>
 //             //     // element.id === action.id ? false : true
 //             //     element.id !== action.id
 //             //     )
@@ -27,7 +91,7 @@
 //                 //     }
 //                 // })
 //                 // return editedArray
-                
+
 //                 // the above into a single line
 //                 return state.map(element => element.id === action.editObj.id ? action.editObj : element)
 //         case 'get-products':
@@ -67,8 +131,7 @@
 //             // console.log('!@-------payloadArr-------@!')
 //             // console.log(payloadArr)
 //             return [...payloadArr, ...state]
-            
-                
+
 //         default:
 //             return state;
 //     }

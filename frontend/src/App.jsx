@@ -1,65 +1,16 @@
-import { useState, useReducer, useEffect } from 'react'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
 import './App.css'
 
-import productReducer from './reducers/productReducer'
+import { getProducts, addProduct, deleteProduct, editProduct, addAPIProducts} from "./features/products/productsSlice"
+
 import ProductCard from './components/ProductCard';
 
 function App() {
 
-  // const initialState = [
-  //   {
-  //     id: uuidv4(),
-  //     type: 'game', 
-  //     title: "Hogwart's Legacy",
-  //     publisher: "Warner Bros.",
-  //     genre: "Adventure",
-  //     price: 59.99
-  //   },
-  //   {
-  //     id: uuidv4(),
-  //     type: 'game',
-  //     title: "Destiny 2",
-  //     publisher: "Bungie",
-  //     genre: "FPS",
-  //     price: 29.99
-  //   },
-  //   {
-  //     id: uuidv4(),
-  //     type: 'game',
-  //     title: "The Last of Us",
-  //     publisher: "Sony",
-  //     genre: "Adventure",
-  //     price: 69.99
-  //   },
-  //   {
-  //     id: uuidv4(),
-  //     type: 'game',
-  //     title: "Total War: Warhammer III",
-  //     publisher: "Sega",
-  //     genre: "Strategy",
-  //     price: 49.99
-  //   },
-  //   {
-  //     id: uuidv4(),
-  //     type: 'movie',
-  //     title: "Everything, Everywhere, All at Once",
-  //     publisher: "A24",
-  //     genre: "Action/Adventure",
-  //     price: 29.99      
-  //   },
-  //   {
-  //     id: uuidv4(),
-  //     type: 'book',
-  //     title: "Dune",
-  //     publisher: "Penguin Classics",
-  //     genre: "Action/Adventure",
-  //     price: 20.99     
-  //   }
-  // ]
-  const initialState = []
-  const [product, dispatch] = useReducer(productReducer, initialState)
-
+  const dispatch = useDispatch();
+  const products = useSelector(state => state.products);
   const baseURL = 'http://localhost:4000/api'
 
   useEffect(() => {
@@ -67,62 +18,40 @@ function App() {
       const response = await fetch(baseURL + '/products/get-all-products')
       const data = await response.json()
       console.log(data)  
-      dispatch({
-        type: 'get-products',
-        payload: data
-      })
+      dispatch(getProducts(data));
     }
     loadData()
-  }, [])
+  }, [dispatch])
   
+  const handleEditProduct = (editedProduct) => {
+    dispatch(editProduct(editedProduct));
+};
 
-  const deleteProduct = (id) => dispatch({
-    type: 'delete',
-    id: id
-  })
-
+  const handleDeleteProduct = (id) => {
+    dispatch(deleteProduct(id));
+};
+  
   const getAPIdata = async () => {
     const response = await fetch(baseURL + '/store/list-products')
     const data = await response.json()
-    dispatch({
-      type: 'add-API',
-      payload: data
-    })
+    dispatch(addAPIProducts(data));
   }
-
-
 
   return (
     <div>
-      <h1>Product Reducer</h1>
-      {/* button dispatchs to add-product */}
-      <button onClick={() => dispatch({type: 'add-product'})}>Add Product</button>
+      <h1>Product Redux</h1>
 
-      {/* button should trigger a function that gets data from the /store/list-products route 
-      and then dispatchs to the reducer which refactors the data into the format our store is using
-      and then sets the state with the new data and the existing data*/}
-      <button onClick={getAPIdata}>Add Store/API products</button>
+      <button onClick={() => dispatch(addProduct())}>Add Product</button>
+      <button onClick={getAPIdata}>Add Store/API Products</button>
 
-      {
-        product.map(element => {
-          return (
-            <ProductCard
-              key={element.id}
-              id={element.id}
-              title={element.title}
-              type={element.type}
-              publisher={element.publisher}
-              genre={element.genre}
-              price={element.price}
-              deleteProduct={deleteProduct}
-              editProduct={(param) => dispatch({
-                type: 'edit',
-                editObj:param
-              })}
-            />
-          )
-        })
-      }
+      {products.map(product => (
+                <ProductCard 
+                    key={product.id} 
+                    {...product} 
+                    deleteProduct={handleDeleteProduct}
+                    editProduct={handleEditProduct} 
+                />
+            ))}
     </div>
   )
 }
